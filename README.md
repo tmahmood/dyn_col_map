@@ -37,7 +37,7 @@ fn main() {
 }
 ```
 
-This also provides benefit when generating CSV files, with different dataset which may not have similar columns.
+This also provides benefit with different datasets, which may not have similar columns.
 So, if you have one dataset with columns `c1` and `c2` another with `c5` and `c6`, all you have to do is following
 
 ```rust
