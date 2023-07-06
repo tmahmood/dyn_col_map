@@ -2,12 +2,13 @@
 
 **this name may not be final**
 
-HashMap, BTreeMap, IndexMap needs a lot of memory in case of String based keys and large number of data.
+HashMap, BTreeMap, IndexMap needs a lot of memory in case of String based keys, and large number of data.
 
-This is a simple library that tries to memory efficiently provide a `IndexMap` like functionality, that might have a large number of data with string keys, using vecs. There might be other better solutions in the wild. In my own testing, I was able to reduce memory usage more than half with a dataset of 947300 rows. As vec index are mapped with String based keys, we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
+This is a simple library that tries to memory efficiently provide a `IndexMap` like functionality, that might have a large number of data with string keys, using vecs. There might be other better solutions in the wild. 
 
+As vec index are mapped with String based keys, we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
 
-Simple macros are provided to easy assigning of data.
+Simple macros are provided for easy assigning of data.
 
 ```rust
 
@@ -76,11 +77,11 @@ fn main() {
             kv "c1", "another set",
             kv "c5", "mixed dataset"
         }
+    
     assert_eq!(
         row,
         vec![
-            // NOTE: this is not filled up. how to handle it is discussed next
-            vec!["c0v", "Something"],
+            vec!["c0v", "Something"],  // NOTE: this is not filled up
             vec!["", "", "v2", "32"],
             vec!["", "another set", "", "mixed dataset"],
         ]
@@ -88,9 +89,11 @@ fn main() {
 }
 ```
 
-One issue is, as noted in the example above, any rows before a new column is added, will fail, as the column does not exist on them. Any rows added after will have them. To solve this issue, `fill_to_end` method should be used for each row as necessary. 
+One issue is, as noted in the example above, any rows before a new column is added, will not be filled up, and cause error when we try to get value for the new column from those rows. Any rows added after will have them. 
 
-Following example provided to clear the issue and solution.
+To solve this issue, `fill_to_end` method should be used for each row as necessary. 
+
+Following example attempts to clearify the issue, and provide solution.
  
 ```rust
     fn main() {
@@ -165,3 +168,13 @@ pub fn write_to_csv(
 ## What this crate tries to solve?
 
 It is trying to maintain the lower memory usage of a vec and ordered key based accessing of an IndexMap.
+
+In my own testing, with a dataset of 947300 rows,
+* HashMap/IndexMap implementation was out of memory on my 64GB machine,
+* ColumnMapper was 37GB.
+* Interestingly Python was only 27GB.
+
+As I understand, HashMap/IndexMap, stores all the keys for each row, and in addition to that, they provide performance for the price of high memory usage. Unfortunately, It was not suitable for my task and I have not found any other solutions online. So here's what I devised.
+
+`fill_to_end` is not optimal. If I ever find a better way, I will try to incorporate it.
+
