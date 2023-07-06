@@ -45,37 +45,42 @@ fn main() {
     let mut cm = ColumnMapper::new();
     // first dataset, but you can add all of the columns beforehand as usual
     // cm.add_columns(vec!["c0", "c1", "c4", "c5"]);
-    
+
     cm.add_columns(vec!["c0", "c1"]);
-    let mut p = Vec::new();
+    let mut row = Vec::new();
     // insert data for first dataset
-    p.push(vec![]);
+    row.push(vec![]);
     cl! {
-            ins cm, p[0],
+            ins cm, row[0],
             kv "c0", "c0v",
             kv "c1", "Something"
         }
     // now another dataset found
     cm.add_columns(vec!["c4", "c5"]);
-    
+
     // insert data for second dataset
-    p.push(vec![]);
+    row.push(vec![]);
     cl! {
-            ins cm, p[1],
+            ins cm, row[1],
             kv "c4", "v2",
             kv "c5", "32"
         }
-    
-    p.push(vec![]);
+
+    // another dataset with mixed columns, as names are common, 
+    // no new columns will be added and the sequence will stay 
+    // the same
+    cm.add_columns(vec!["c1", "c5"]);
+    row.push(vec![]);
     cl! {
-            ins cm, p[2],
+            ins cm, row[2],
             kv "c1", "another set",
             kv "c5", "mixed dataset"
         }
     assert_eq!(
-        p,
+        row,
         vec![
-            vec!["c0v", "Something"], // NOTE: this is not filled up. how to handle it is discussed next
+            // NOTE: this is not filled up. how to handle it is discussed next
+            vec!["c0v", "Something"],
             vec!["", "", "v2", "32"],
             vec!["", "another set", "", "mixed dataset"],
         ]

@@ -151,6 +151,7 @@ mod tests {
             kv "c5", "32"
         }
         // mixture of dataset is possible
+        cm.add_columns(vec!["c1", "c5"]);
         rows.push(vec![]);
         cl! {
             ins cm, rows[2],
