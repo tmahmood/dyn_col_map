@@ -1,30 +1,29 @@
-pub mod column_map;
+pub mod table_map;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::column_map::colum_map_errors::ColumnMapErrors;
-    use crate::column_map::ColumnMap;
+    use crate::table_map::table_map_errors::TableMapErrors;
+    use crate::table_map::TableMap;
 
     #[test]
-    fn test_col_mapper_macro() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut row = vec![];
-        cl! { ins cm, row, "c0", "c0v" }
-        cl! {
-            ins cm, row,
-            kv "c1", "Something",
-            kv "c2", "v2",
-            kv "c3", "32"
+    fn test_macro() {
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        update_row! { tm, "c0", "c0v" }
+        update_row! {
+            tm,
+            "c1", "Something",
+            "c2", "v2",
+            "c3", "32"
         }
         // get all the columns, sequence is maintained
-        assert_eq!(cm.get_columns(), vec!["c0", "c1", "c2", "c3"]);
-        assert_eq!(row, vec!["c0v", "Something", "v2", "32"])
+        assert_eq!(tm.get_columns(), vec!["c0", "c1", "c2", "c3"]);
+        assert_eq!(tm.get_vec(), &vec![vec!["c0v", "Something", "v2", "32"]]);
     }
 
     #[test]
-    fn test_col_mapper_macro_obj() {
+    fn test_macro_obj() {
         #[derive(Clone, Default, PartialEq, Debug)]
         struct TestStruct {
             val: i32,
@@ -35,94 +34,88 @@ mod tests {
             TestStruct { val: 1230 },
             TestStruct { val: 800 },
         ];
-        let mut column_mapper = ColumnMap::new();
-        column_mapper.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut row = vec![];
-        cl! { ins column_mapper, row, "c0", ar[0].clone() }
-        cl! {
-            ins column_mapper, row,
-            kv "c1", ar[1].clone(),
-            kv "c2", ar[2].clone(),
-            kv "c3", ar[3].clone()
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        update_row! { tm, "c0", ar[0].clone() }
+        update_row! {
+            tm,
+            "c1", ar[1].clone(),
+            "c2", ar[2].clone(),
+            "c3", ar[3].clone()
         }
-        assert_eq!(column_mapper.get_columns(), vec!["c0", "c1", "c2", "c3"]);
-        assert_eq!(row, ar)
+        assert_eq!(tm.get_vec(), &vec![ar])
     }
 
     #[test]
     fn test_insert_randomly() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut row = Vec::new();
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
 
-        cl! {
-            ins cm, row,
-            kv "c1", "Something",
-            kv "c3", "Another thing",
-            kv "c2", "First thing"
+        update_row! {
+            tm,
+            "c1", "Something",
+            "c3", "Another thing",
+            "c2", "First thing"
         }
-        assert_eq!(cm.get(&row, "c1").unwrap(), "Something");
-        assert!(cm.get(&row, "c10").is_err());
-        assert_eq!(row, vec!["", "Something", "First thing", "Another thing"]);
+        assert_eq!(tm.get_current("c1").unwrap(), "Something");
+        assert!(tm.get_current("c10").is_err());
+        assert_eq!(
+            tm.get_vec(),
+            &vec![vec!["", "Something", "First thing", "Another thing"]]
+        );
     }
 
     #[test]
     fn test_extending_with_new_column() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut row = Vec::new();
-        cl! {
-            ins cm, row,
-            kv "c1", "Something",
-            kv "c3", "Another thing",
-            kv "c2", "First thing"
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        update_row! {
+            tm,
+            "c1", "Something",
+            "c3", "Another thing",
+            "c2", "First thing"
         }
-        cm.add_column("c5");
-        cm.insert(&mut row, "c0", "First First thing").unwrap();
-
+        tm.add_column("c5");
+        tm.insert("c0", "First First thing").unwrap();
         // no matter how the data is inserted, the sequence of column is maintained
         assert_eq!(
-            row,
-            vec![
+            tm.get_vec(),
+            &vec![vec![
                 "First First thing",
                 "Something",
                 "First thing",
                 "Another thing",
-                ""
-            ]
+                "",
+            ]]
         );
     }
 
     #[test]
     fn test_multiple_row_with_empty_column() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut rows = Vec::new();
-        rows.insert(0, vec![]);
-        cl! {
-            ins cm, rows[0],
-            kv "c0", "c0v",
-            kv "c1", "Something",
-            kv "c2", "v2",
-            kv "c3", "32"
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        push! {
+            tm,
+            "c0", "c0v",
+            "c1", "Something",
+            "c2", "v2",
+            "c3", "32"
         }
-        rows.insert(1, vec![]);
-        cl! {
-            ins cm, rows[1],
-            kv "c0", "c0v",
-            kv "c2", "v2",
-            kv "c3", "32"
+        push! {
+            tm,
+            "c0", "c0v",
+            "c2", "v2",
+            "c3", "32"
         }
-        rows.insert(2, vec![]);
-        cl! {
-            ins cm, rows[2],
-            kv "c0", "c0v",
-            kv "c1", "Something",
-            kv "c2", "v2"
+        push! {
+            tm,
+            "c0", "c0v",
+            "c1", "Something",
+            "c2", "v2"
         }
         assert_eq!(
-            rows,
-            vec![
+            tm.get_vec(),
+            &vec![
                 vec!["c0v", "Something", "v2", "32"],
                 vec!["c0v", "", "v2", "32"],
                 vec!["c0v", "Something", "v2", ""],
@@ -132,79 +125,78 @@ mod tests {
 
     #[test]
     fn test_multi_datasets_csv() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1"]);
-        let mut rows = Vec::new();
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1"]);
         // insert data for first dataset
-        rows.push(vec![]);
-        cl! {
-            ins cm, rows[0],
-            kv "c0", "c0v",
-            kv "c1", "Something"
+        push! {
+            tm,
+            "c0", "c0v",
+            "c1", "Something"
         }
-        cm.add_columns(vec!["c4", "c5"]);
+        tm.add_columns(vec!["c4", "c5"]);
         // insert data for second dataset
-        rows.push(vec![]);
-        cl! {
-            ins cm, rows[1],
-            kv "c4", "v2",
-            kv "c5", "32"
+        push! {
+            tm,
+            "c4", "v2",
+            "c5", "32"
         }
         // mixture of dataset is possible
-        cm.add_columns(vec!["c1", "c5"]);
-        rows.push(vec![]);
-        cl! {
-            ins cm, rows[2],
-            kv "c1", "another set",
-            kv "c5", "mixed dataset"
+        tm.add_columns(vec!["c1", "c5"]);
+        push! {
+            tm,
+            "c1", "another set",
+            "c5", "mixed dataset"
         }
         assert_eq!(
-            rows,
-            vec![
-                vec!["c0v", "Something"],
+            tm.get_vec(),
+            &vec![
+                vec!["c0v", "Something", "", ""],
                 vec!["", "", "v2", "32"],
                 vec!["", "another set", "", "mixed dataset"],
             ]
         );
     }
 
+    // testing unset columns
+    fn setup_for_unset_columns() -> TableMap<String> {
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        update_row! {
+            tm,
+            "c0", "r1d0".into(),
+            "c2", "r1d2".into()
+        }
+        tm
+    }
+
     #[test]
-    fn test_handling_unset_columns() {
-        let mut cm = ColumnMap::new();
-        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        let mut rows = Vec::new();
+    fn test_unset_column_value_should_be_empty() {
+        let mut tm = setup_for_unset_columns();
+        // this will be an empty value, as inserted row does not set "c3" column
+        assert_eq!(tm.get_current("c3").unwrap(), "");
+    }
 
-        rows.push(vec![]);
-        cl! {
-            ins cm, rows[0],
-            kv "c0", "r1d0",
-            kv "c2", "r1d2"
-        }
-
-        cm.add_column("c4");
-
+    #[test]
+    fn test_accessing_rows_added_before_additional_column_returns_error() {
+        let mut tm = setup_for_unset_columns();
+        tm.add_column("c4");
         // this will cause a NoDataSet error, cause column c4 was created after setting *this* row
-        let n = cm.get(&rows[0], "c4");
-        assert!(n.is_err());
+        assert!(tm.get_current("c4").is_err());
+    }
 
-        // fill the row with
-        cm.fill_to_end(&mut rows[0]);
-        // now it will be okay
-        let n = cm.get(&rows[0], "c4");
-        assert!(n.is_ok());
+    #[test]
+    fn test_filling_unset_columns() {
+        let mut tm = setup_for_unset_columns();
+        tm.add_column("c4");
+        tm.fill_to_end();
+        assert!(tm.get_current("c4").is_ok());
+    }
 
-        // all the next rows will have all the columns
-        rows.push(vec![]);
-        cl! {
-            ins cm, rows[1],
-            kv "c0", "r2d0",
-            kv "c2", "r2d2"
-        }
-
-        // this will work without filling up
-        let n = cm.get(&rows[1], "c4");
-        assert!(n.is_ok());
-
-        println!("{:?}", rows);
+    #[test]
+    fn test_before_moving_to_next_row_will_fill_up_current_row() {
+        let mut tm = setup_for_unset_columns();
+        tm.add_column("c4");
+        tm.next_row();
+        assert!(tm.get_index(0, "c4").is_ok());
     }
 }
