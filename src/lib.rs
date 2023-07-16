@@ -1,14 +1,14 @@
-pub mod column_mapper;
+pub mod column_map;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::column_mapper::col_mapper_errors::ColMapperErrors;
-    use crate::column_mapper::ColumnMapper;
+    use crate::column_map::colum_map_errors::ColumnMapErrors;
+    use crate::column_map::ColumnMap;
 
     #[test]
     fn test_col_mapper_macro() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut row = vec![];
         cl! { ins cm, row, "c0", "c0v" }
@@ -35,7 +35,7 @@ mod tests {
             TestStruct { val: 1230 },
             TestStruct { val: 800 },
         ];
-        let mut column_mapper = ColumnMapper::new();
+        let mut column_mapper = ColumnMap::new();
         column_mapper.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut row = vec![];
         cl! { ins column_mapper, row, "c0", ar[0].clone() }
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn test_insert_randomly() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut row = Vec::new();
 
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_extending_with_new_column() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut row = Vec::new();
         cl! {
@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn test_multiple_row_with_empty_column() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut rows = Vec::new();
         rows.insert(0, vec![]);
@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     fn test_multi_datasets_csv() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1"]);
         let mut rows = Vec::new();
         // insert data for first dataset
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_handling_unset_columns() {
-        let mut cm = ColumnMapper::new();
+        let mut cm = ColumnMap::new();
         cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
         let mut rows = Vec::new();
 

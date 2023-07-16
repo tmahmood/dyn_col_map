@@ -1,11 +1,11 @@
-use crate::column_mapper::col_mapper_errors::ColMapperErrors;
+use crate::column_map::colum_map_errors::ColumnMapErrors;
 use indexmap::IndexMap;
 
-pub mod col_mapper_errors {
+pub mod colum_map_errors {
     use thiserror::Error;
 
     #[derive(Error, Debug)]
-    pub enum ColMapperErrors {
+    pub enum ColumnMapErrors {
         #[error("Column name does not exist")]
         InvalidColumnName,
 
@@ -18,9 +18,9 @@ pub mod col_mapper_errors {
 /// Macro to inserting data simpler and clean
 /// ```
 /// use dyn_col_map::cl;
-/// use dyn_col_map::column_mapper::ColumnMapper;
+/// use dyn_col_map::column_map::ColumnMap;
 ///
-/// let mut cm = ColumnMapper::new();
+/// let mut cm = ColumnMap::new();
 /// cm.add_columns(vec!["col_0", "col_1", "col_2", "col_3"]);
 /// let mut row = vec![];
 /// cl! { ins cm, row, "col_0", "Some value" }
@@ -44,12 +44,12 @@ macro_rules! cl {
 }
 
 #[derive(Clone)]
-pub struct ColumnMapper {
+pub struct ColumnMap {
     columns: IndexMap<String, usize>,
     col_index: usize,
 }
 
-impl ColumnMapper {
+impl ColumnMap {
     pub fn new() -> Self {
         Self {
             columns: IndexMap::new(),
@@ -93,9 +93,9 @@ impl ColumnMapper {
         target: &mut Vec<T>,
         col_name: &str,
         value: T,
-    ) -> Result<(), ColMapperErrors> {
+    ) -> Result<(), ColumnMapErrors> {
         let index = match self.columns.get(col_name) {
-            None => return Err(ColMapperErrors::InvalidColumnName),
+            None => return Err(ColumnMapErrors::InvalidColumnName),
             Some(index) => index,
         };
         self.fill_to_end(target);
@@ -111,13 +111,13 @@ impl ColumnMapper {
     }
 
     /// gets data from the given array, using the column name.
-    pub fn get<T: Clone>(&self, target: &Vec<T>, col_name: &str) -> Result<T, ColMapperErrors> {
+    pub fn get<T: Clone>(&self, target: &Vec<T>, col_name: &str) -> Result<T, ColumnMapErrors> {
         let index = match self.columns.get(col_name) {
-            None => return Err(ColMapperErrors::InvalidColumnName),
+            None => return Err(ColumnMapErrors::InvalidColumnName),
             Some(index) => index,
         };
         match target.get(*index) {
-            None => return Err(ColMapperErrors::NoDataSet),
+            None => return Err(ColumnMapErrors::NoDataSet),
             Some(v) => Ok(v.clone()),
         }
     }

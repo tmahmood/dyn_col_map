@@ -1,4 +1,4 @@
-# Column Mapper
+# ColumnMap
 
 **this name may not be final**
 
@@ -13,7 +13,7 @@ Simple macros are provided for easy assigning of data.
 ```rust
 
 fn main() {
-    let mut cm = ColumnMapper::new();
+    let mut cm = ColumnMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
 
     let mut row = vec![];
@@ -43,7 +43,7 @@ So, if you have one dataset with columns `c1` and `c2` another with `c5` and `c6
 
 ```rust
 fn main() {
-    let mut cm = ColumnMapper::new();
+    let mut cm = ColumnMap::new();
     // first dataset, but you can add all of the columns beforehand as usual
     // cm.add_columns(vec!["c0", "c1", "c4", "c5"]);
 
@@ -97,7 +97,7 @@ Following example attempts to clearify the issue, and provide solution.
  
 ```rust
     fn main() {
-    let mut cm = ColumnMapper::new();
+    let mut cm = ColumnMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
     let mut rows = Vec::new();
 
@@ -144,7 +144,7 @@ Here's how to save data to a CSV file using `csv` crate
 pub fn write_to_csv(
     file_name: PathBuf,
     rows: &Vec<Vec<String>>,
-    col_mapper: &ColumnMapper,
+    col_mapper: &ColumnMap,
 ) {
     let mut writer = WriterBuilder::new()
         .has_headers(false)
@@ -171,7 +171,7 @@ It is trying to maintain the lower memory usage of a vec and ordered key based a
 
 In my own testing, with a dataset of 947300 rows,
 * HashMap/IndexMap implementation was out of memory on my 64GB machine,
-* ColumnMapper was 37GB.
+* ColumnMap was 37GB.
 * Interestingly Python was only 27GB.
 
 As I understand, HashMap/IndexMap, stores all the keys for each row, and in addition to that, they provide performance for the price of high memory usage. Unfortunately, It was not suitable for my task and I have not found any other solutions online. So here's what I devised.
