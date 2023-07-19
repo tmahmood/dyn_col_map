@@ -1,39 +1,54 @@
-# ColumnMap
+# TableMap
 
 **this name may not be final**
 
 HashMap, BTreeMap, IndexMap needs a lot of memory in case of String based keys, and large number of data.
 
-This is a simple library that tries to memory efficiently provide a `IndexMap` like functionality, that might have a large number of data with string keys, using vecs. There might be other better solutions in the wild. 
+This is a simple library that tries to memory efficiently provide a `IndexMap` with a String key like functionality using vecs, that might have a large number of data with string keys. There might be other better solutions in the wild. 
 
-As vec index are mapped with String based keys, we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
+As the String keys are mapped to vec index we are storing the string keys only once, instead of we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
+
+#### To do
+
+[ ] Remove
+[ ] Clear
 
 Simple macros are provided for easy assigning of data.
 
 ```rust
 
 fn main() {
-    let mut cm = ColumnMap::new();
+    let mut cm = TableMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
 
-    let mut row = vec![];
-    
     // single insert
-    cm.insert(&mut row, "c1", "Something").unwrap();
+    cm.insert("c1", "Something").unwrap();
 
-    // single insert using macro
-    cl! { ins cm, row, "c0", "c0v" }
+    // single insert using macro, will not change row
+    update_row! { cm, "c0", "c0v" }
 
-    // multiple inserts using macro
-    cl! {
-        ins cm, row,
-        kv "c1", "Something",
-        kv "c2", "v2",
-        kv "c3", "32"
+    // multiple inserts using macro, this will create a new row and insert
+    push! {
+        cm,
+        "c1", "Something",
+        "c2", "v2",
+        "c3", "32"
     }
     
-    // getting a value
-    let v = cm.get(&row, "c1").unwrap();
+    update_row! { 
+        cm, 
+        "c0", "Another thing"
+        "c1", "second column"
+        "c2", "another value"
+        "c3", "final column"
+    }
+
+    // getting a value from current row
+    let v = cm.get_current("c1").unwrap();
+    assert_eq!(v, "second column");
+    
+    // getting a value from another row
+    let v = cm.get_at(0, "c1").unwrap();
     assert_eq!(v, "Something")
 }
 ```
@@ -43,7 +58,7 @@ So, if you have one dataset with columns `c1` and `c2` another with `c5` and `c6
 
 ```rust
 fn main() {
-    let mut cm = ColumnMap::new();
+    let mut cm = TableMap::new();
     // first dataset, but you can add all of the columns beforehand as usual
     // cm.add_columns(vec!["c0", "c1", "c4", "c5"]);
 
@@ -97,7 +112,7 @@ Following example attempts to clearify the issue, and provide solution.
  
 ```rust
     fn main() {
-    let mut cm = ColumnMap::new();
+    let mut cm = TableMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
     let mut rows = Vec::new();
 
@@ -144,7 +159,7 @@ Here's how to save data to a CSV file using `csv` crate
 pub fn write_to_csv(
     file_name: PathBuf,
     rows: &Vec<Vec<String>>,
-    col_mapper: &ColumnMap,
+    col_mapper: &TableMap,
 ) {
     let mut writer = WriterBuilder::new()
         .has_headers(false)
@@ -171,10 +186,10 @@ It is trying to maintain the lower memory usage of a vec and ordered key based a
 
 In my own testing, with a dataset of 947300 rows,
 * HashMap/IndexMap implementation was out of memory on my 64GB machine,
-* ColumnMap was 37GB.
+* TableMap was 37GB.
 * Interestingly Python was only 27GB.
 
 As I understand, HashMap/IndexMap, stores all the keys for each row, and in addition to that, they provide performance for the price of high memory usage. Unfortunately, It was not suitable for my task and I have not found any other solutions online. So here's what I devised.
 
-`fill_to_end` is not optimal. If I ever find a better way, I will try to incorporate it.
+`fill_to_end` may not be optimal. If I ever find a better way, I will try to incorporate it.
 

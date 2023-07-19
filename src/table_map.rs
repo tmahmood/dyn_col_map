@@ -1,25 +1,9 @@
-use crate::table_map::table_map_errors::TableMapErrors;
+use crate::table_map_errors::TableMapErrors;
 use indexmap::IndexMap;
 use std::fmt::Debug;
 use std::mem;
 use std::ops::Deref;
 use std::rc::Rc;
-
-pub mod table_map_errors {
-    use thiserror::Error;
-
-    #[derive(Error, Debug)]
-    pub enum TableMapErrors {
-        #[error("Column name does not exist")]
-        InvalidColumnName,
-
-        #[error("No data is set")]
-        NoDataSet,
-
-        #[error("Invalid row index")]
-        InvalidRowIndex,
-    }
-}
 
 ///
 /// Updates the current row, it will create a new row if no rows exists
@@ -29,7 +13,6 @@ pub mod table_map_errors {
 ///
 /// let mut cm = TableMap::new();
 /// cm.add_columns(vec!["col_0", "col_1", "col_2", "col_3"]);
-/// let mut row = vec![];
 /// update_row! { cm, "col_0", "Some value" }
 /// update_row! {
 ///     cm,
@@ -105,9 +88,6 @@ impl<T: Default + Clone + Debug> TableMap<T> {
 
     /// insert current row to main collection, clears the current row
     pub fn next_row(&mut self) {
-        if self.rows.len() > 0 {
-            self.fill_to_end();
-        }
         self.rows.push(vec![]);
         self.fill_to_end();
     }
@@ -125,26 +105,6 @@ impl<T: Default + Clone + Debug> TableMap<T> {
     pub fn add_columns(&mut self, cols: Vec<&str>) {
         for col in cols {
             self.add_column(col)
-        }
-    }
-
-    fn get_current_row(&self) -> &Vec<T> {
-        self.rows.last().unwrap()
-    }
-
-    fn get_current_row_mut(&mut self) -> &mut Vec<T> {
-        if self.rows.last().is_none() {
-            self.rows.push(vec![])
-        }
-        self.rows.last_mut().unwrap()
-    }
-
-    fn fill_target(&mut self, end: &usize, start: usize) {
-        let mut current_row = self.get_current_row_mut();
-        for ii in start..=*end {
-            if let None = current_row.get(ii) {
-                current_row.push(T::default())
-            }
         }
     }
 
@@ -172,8 +132,19 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         self.fill_target(&n, 0);
     }
 
+    fn fill_target(&mut self, end: &usize, start: usize) {
+        let current_row = self.get_current_row_mut();
+        // let filler = vec![T::default(); end - start + 1];
+        // current_row.extend(filler);
+        for ii in start..=*end {
+            if let None = current_row.get(ii) {
+                current_row.push(T::default())
+            }
+        }
+    }
+
     /// gets data from current row, using the column name.
-    pub fn get_current(&self, col_name: &str) -> Result<T, TableMapErrors> {
+    pub fn get_column_value(&self, col_name: &str) -> Result<T, TableMapErrors> {
         let index = self.get_column_index(col_name)?;
         let current_row = self.get_current_row();
         current_row
@@ -182,8 +153,12 @@ impl<T: Default + Clone + Debug> TableMap<T> {
             .cloned()
     }
 
-    /// gets data from indexd row, using the column name.
-    pub fn get_index(&self, row_index: usize, col_name: &str) -> Result<T, TableMapErrors> {
+    /// gets data from indexed row, using the column name.
+    pub fn get_column_value_by_index(
+        &self,
+        row_index: usize,
+        col_name: &str,
+    ) -> Result<T, TableMapErrors> {
         let index = self.get_column_index(col_name)?;
         let selected_row = self
             .rows
@@ -197,5 +172,22 @@ impl<T: Default + Clone + Debug> TableMap<T> {
 
     pub fn get_vec(&self) -> &Vec<Vec<T>> {
         &self.rows
+    }
+
+    fn get_row_by_index_mut(&mut self, row: usize) -> Result<&mut Vec<T>, TableMapErrors> {
+        self.rows
+            .get_mut(row)
+            .ok_or(TableMapErrors::InvalidRowIndex)
+    }
+
+    fn get_current_row(&self) -> &Vec<T> {
+        self.rows.last().unwrap()
+    }
+
+    fn get_current_row_mut(&mut self) -> &mut Vec<T> {
+        if self.rows.last().is_none() {
+            self.rows.push(vec![])
+        }
+        self.rows.last_mut().unwrap()
     }
 }
