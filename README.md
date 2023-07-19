@@ -26,25 +26,25 @@ use dyn_col_map::{push, update_row};
 fn main() {
     let mut cm = TableMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-    // single insert
+    // single insert, no new row added
     cm.insert("c1", "Something").unwrap();
-    // single insert using macro, will not change row
+    // single insert using macro, no new row added
     update_row! { cm, "c0", "c0v" }
-    // multiple inserts using macro, this will create a new row and insert
-    push! {
+    // multiple inserts using macro, will not add new row
+    update_row! {
         cm,
         "c1", "Something",
         "c2", "v2",
         "c3", "32"
     }
-    // updating current row
-    update_row! {
-    cm,
-    "c0", "Another thing",
-    "c1", "second column",
-    "c2", "another value",
-    "c3", "final column"
-}
+    // this will create a new row and insert
+    push! {
+        cm,
+        "c0", "Another thing",
+        "c1", "second column",
+        "c2", "another value",
+        "c3", "final column"
+    }
     // getting a value from current row
     let v = cm.get_column_value("c1").unwrap();
     assert_eq!(v, "second column");
