@@ -6,7 +6,7 @@ HashMap, BTreeMap, IndexMap needs a lot of memory in case of String based keys, 
 
 This is a simple library that tries to memory efficiently provide a `IndexMap` with a String key like functionality using vecs, that might have a large number of data with string keys. There might be other better solutions in the wild.
 
-As the String keys are mapped to vec index we are storing the string keys only once, instead of we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
+As the String keys are mapped to vec index we are storing the string keys only once, I have not benchmarked it, so can not say anything about performance, yet.
 
 Simple macros are provided for easy assigning of data.
 
@@ -26,25 +26,25 @@ use dyn_col_map::{push, update_row};
 fn main() {
     let mut cm = TableMap::new();
     cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-    // single insert
+    // single insert, no new row added
     cm.insert("c1", "Something").unwrap();
-    // single insert using macro, will not change row
+    // single insert using macro, no new row added
     update_row! { cm, "c0", "c0v" }
-    // multiple inserts using macro, this will create a new row and insert
-    push! {
+    // multiple inserts using macro, will not add new row
+    update_row! {
         cm,
         "c1", "Something",
         "c2", "v2",
         "c3", "32"
     }
-    // updating current row
-    update_row! {
-    cm,
-    "c0", "Another thing",
-    "c1", "second column",
-    "c2", "another value",
-    "c3", "final column"
-}
+    // this will create a new row and insert
+    push! {
+        cm,
+        "c0", "Another thing",
+        "c1", "second column",
+        "c2", "another value",
+        "c3", "final column"
+    }
     // getting a value from current row
     let v = cm.get_column_value("c1").unwrap();
     assert_eq!(v, "second column");

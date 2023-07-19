@@ -28,15 +28,15 @@
 //! cm.insert("c1", "Something").unwrap();
 //! // single insert using macro, will not change row
 //! update_row! { cm, "c0", "c0v" }
-//! // multiple inserts using macro, this will create a new row and insert
-//! push! {
+//! // multiple inserts using macro, will not add a new row
+//! update_row! {
 //!     cm,
 //!     "c1", "Something",
 //!     "c2", "v2",
 //!     "c3", "32"
 //! }
-//! // updating current row
-//! update_row! {
+//! // this will create a new row and insert
+//! push! {
 //!     cm,
 //!     "c0", "Another thing",
 //!     "c1", "second column",
@@ -48,7 +48,7 @@
 //! assert_eq!(v, "second column");
 //! // getting a value from another row
 //! let v = cm.get_column_value_by_index(0, "c1").unwrap();
-//! assert_eq!(v, "Something")
+//! assert_eq!(v, "Something");
 //!
 //! ```
 //!
@@ -78,7 +78,7 @@
 //!         "c5", "32"
 //!     }
 //!
-//! // another dataset with mixed columns, as names are common,
+//! // another dataset with mixed columns, as names are already added,
 //! // no new columns will be added and the sequence will stay
 //! // the same
 //! cm.add_columns(vec!["c1", "c5"]);
