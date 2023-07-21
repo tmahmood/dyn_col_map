@@ -21,21 +21,22 @@ Simple macros are provided for easy assigning of data.
 use table_map::{push, update_row, TableMap};
 
 
-let mut cm = TableMap::new();
-cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-// single insert
-cm.insert("c1", "Something").unwrap();
-// single insert using macro, will not change row
-update_row! { cm, "c0", "c0v" }
-// multiple inserts using macro, will not add a new row
-update_row! {
+fn main() {
+    let mut cm = TableMap::new();
+    cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+    // single insert
+    cm.insert("c1", "Something").unwrap();
+    // single insert using macro, will not change row
+    update_row! { cm, "c0", "c0v" }
+    // multiple inserts using macro, will not add a new row
+    update_row! {
     cm,
     "c1", "Something",
     "c2", "v2",
     "c3", "32"
 }
-// this will create a new row and insert
-push! {
+    // this will create a new row and insert
+    push! {
     cm,
     "c0", "Another thing",
     "c1", "second column",
@@ -43,11 +44,12 @@ push! {
     "c3", "final column"
 }
 // getting a value from current row
-let v = cm.get_column_value("c1").unwrap();
-assert_eq!(v, "second column");
+    let v = cm.get_column_value("c1").unwrap();
+    assert_eq!(v, "second column");
 // getting a value from another row
-let v = cm.get_column_value_by_index(0, "c1").unwrap();
-assert_eq!(v, "Something");
+    let v = cm.get_column_value_by_index(0, "c1").unwrap();
+    assert_eq!(v, "Something");
+}
 
 ```
 
@@ -56,44 +58,47 @@ So, in case of one dataset with columns `c1` and `c2` another with `c5` and `c6`
 
 ```rust
 use table_map::{push, update_row, TableMap};
-let mut cm = TableMap::new();
- // first dataset, but you can add all of the columns beforehand as usual
- // cm.add_columns(vec!["c0", "c1", "c4", "c5"]);
 
-cm.add_columns(vec!["c0", "c1"]);
-// insert data for first dataset
-push! {
+fn main() {
+    let mut cm = TableMap::new();
+    // first dataset, but you can add all of the columns beforehand as usual
+    // cm.add_columns(vec!["c0", "c1", "c4", "c5"]);
+
+    cm.add_columns(vec!["c0", "c1"]);
+    // insert data for first dataset
+    push! {
         cm,
         "c0", "c0v",
         "c1", "Something"
     }
-// now another dataset found
-cm.add_columns(vec!["c4", "c5"]);
-// insert data for second dataset
-push! {
+    // now another dataset found
+    cm.add_columns(vec!["c4", "c5"]);
+    // insert data for second dataset
+    push! {
         cm,
         "c4", "v2",
         "c5", "32"
     }
 
-// another dataset with mixed columns, as names are already added,
-// no new columns will be added and the sequence will stay
-// the same
-cm.add_columns(vec!["c1", "c5"]);
-push! {
+    // another dataset with mixed columns, as names are already added,
+    // no new columns will be added and the sequence will stay
+    // the same
+    cm.add_columns(vec!["c1", "c5"]);
+    push! {
         cm,
         "c1", "another set",
         "c5", "mixed dataset"
     }
 
-assert_eq!(
-    cm.get_vec(),
-    &vec![
-        vec!["c0v", "Something"],  // NOTE: this is not filled up
-        vec!["", "", "v2", "32"],
-        vec!["", "another set", "", "mixed dataset"],
-    ]
-);
+    assert_eq!(
+        cm.get_vec(),
+        &vec![
+            vec!["c0v", "Something"],  // NOTE: this is not filled up
+            vec!["", "", "v2", "32"],
+            vec!["", "another set", "", "mixed dataset"],
+        ]
+    );
+}
 
 ```
 
@@ -107,39 +112,42 @@ Following example attempts to clarify the issue, and provide solution.
 
 ```rust
     use table_map::{push, update_row, TableMap};
-    let mut cm = TableMap::new();
-    cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+    fn main() {
 
-    update_row! {
+        let mut cm = TableMap::new();
+        cm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+
+        update_row! {
             cm,
             "c0", "r1d0",
             "c2", "r1d2"
         }
 
-    // now a new column is added
-    cm.add_column("c4");
+        // now a new column is added
+        cm.add_column("c4");
 
-    // this will cause a NoDataSet error, cause column c4 was created after setting
-    // this row, and it does not exists
-    let n = cm.get_column_value("c4");
-    assert!(n.is_err());
+        // this will cause a NoDataSet error, cause column c4 was created after setting
+        // this row, and it does not exists
+        let n = cm.get_column_value("c4");
+        assert!(n.is_err());
 
-    // fill the row with default value
-    cm.fill_to_end();
-    // now it will be okay
-    let n = cm.get_column_value("c4");
-    assert!(n.is_ok());
+        // fill the row with default value
+        cm.fill_to_end();
+        // now it will be okay
+        let n = cm.get_column_value("c4");
+        assert!(n.is_ok());
 
-    // all the next rows will have all the columns
-    push! {
+        // all the next rows will have all the columns
+        push! {
             cm,
             "c0", "r2d0",
             "c2", "r2d2"
         }
 
-    // this will work without filling up
-    let n = cm.get_column_value("c4");
-    assert!(n.is_ok());
+        // this will work without filling up
+        let n = cm.get_column_value("c4");
+        assert!(n.is_ok());
+    }
 
 ```
 
