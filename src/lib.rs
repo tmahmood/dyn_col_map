@@ -3,7 +3,7 @@
 pub mod table_map;
 pub mod table_map_errors;
 
-pub use table_map::TableMap as TableMap;
+pub use crate::table_map::TableMap as TableMap;
 
 
 #[cfg(test)]
