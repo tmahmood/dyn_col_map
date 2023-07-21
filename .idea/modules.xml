@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/dyn_col_map.iml" filepath="$PROJECT_DIR$/dyn_col_map.iml" />
+      <module fileurl="file://$PROJECT_DIR$/table_map.iml" filepath="$PROJECT_DIR$/table_map.iml" />
     </modules>
   </component>
 </project>

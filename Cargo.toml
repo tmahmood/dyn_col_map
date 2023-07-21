@@ -1,5 +1,5 @@
 [package]
-name = "dyn_col_map"
+name = "table_map"
 version = "0.1.0"
 edition = "2021"
 

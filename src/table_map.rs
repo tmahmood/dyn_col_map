@@ -1,15 +1,11 @@
 use crate::table_map_errors::TableMapErrors;
 use indexmap::IndexMap;
 use std::fmt::Debug;
-use std::mem;
-use std::ops::Deref;
-use std::rc::Rc;
 
 ///
 /// Updates the current row, it will create a new row if no rows exists
 /// ```
-/// use dyn_col_map::update_row;
-/// use dyn_col_map::table_map::TableMap;
+/// use table_map::{update_row, TableMap};
 ///
 /// let mut cm = TableMap::new();
 /// cm.add_columns(vec!["col_0", "col_1", "col_2", "col_3"]);
@@ -30,7 +26,7 @@ macro_rules! update_row {
     };
 
     ($cm: ident, $($cn: expr, $m: expr),+) => {{
-        $(update_row! { $cm, $cn, $m });+
+        $($cm.insert($cn, $m).unwrap();)+
     }};
 
 }
@@ -38,8 +34,7 @@ macro_rules! update_row {
 ///
 /// insert data in a new row
 /// ```
-/// use dyn_col_map::push;
-/// use dyn_col_map::table_map::TableMap;
+/// use table_map::{push, update_row, TableMap};
 ///
 /// let mut cm = TableMap::new();
 /// cm.add_columns(vec!["col_0", "col_1", "col_2", "col_3"]);
@@ -61,7 +56,7 @@ macro_rules! push {
 
     ($cm: ident, $($cn: expr, $m: expr),+) => {{
         $cm.next_row();
-        $(update_row! { $cm, $cn, $m });+
+        $($cm.insert($cn, $m).unwrap();)+
     }};
 }
 
