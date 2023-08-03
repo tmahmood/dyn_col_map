@@ -78,6 +78,16 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         }
     }
 
+    /// number of rows
+    pub fn num_rows(&self) -> usize {
+        self.rows.len()
+    }
+
+    /// number of columns
+    pub fn num_cols(&self) -> usize {
+        self.columns.len()
+    }
+
     /// Column, in sequence, can be used as headers when generating a CSV file
     pub fn get_columns(&self) -> Vec<String> {
         self.columns.keys().cloned().collect()
