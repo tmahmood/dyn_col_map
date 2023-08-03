@@ -11,6 +11,26 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_filling() {
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        tm.insert("c0", "Something").unwrap();
+        let v = tm.get_vec();
+        println!("{:?}", v);
+        assert_eq!(
+            v[0],
+            vec!["Something", "", "", ""]
+        );
+        tm.fill_to_end();
+        let v = tm.get_vec();
+        println!("{:?}", v);
+        assert_eq!(
+            v[0],
+            vec!["Something", "", "", ""]
+        );
+    }
+
+    #[test]
     fn test_macro() {
         let mut tm = TableMap::new();
         tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
@@ -183,6 +203,7 @@ mod tests {
     #[test]
     fn test_accessing_rows_added_before_additional_column_returns_error() {
         let mut tm = setup_for_unset_columns();
+        println!("{:?}", tm.get_vec());
         tm.add_column("c4");
         // this will cause a NoDataSet error, cause column c4 was created after setting *this* row
         assert!(tm.get_column_value("c4").is_err());
@@ -201,7 +222,6 @@ mod tests {
         let mut tm = setup_for_unset_columns();
         tm.add_column("c4");
         tm.next_row();
-        println!("{:?}", tm.get_vec());
         assert!(tm.get_column_value_by_index(0, "c4").is_err());
     }
 }

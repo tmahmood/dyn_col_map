@@ -83,8 +83,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
 
     /// insert current row to main collection, clears the current row
     pub fn next_row(&mut self) {
-        self.rows.push(vec![]);
-        self.fill_to_end();
+        self.rows.push(vec![T::default(); self.columns.len()]);
     }
 
     /// Adds a column
@@ -123,14 +122,12 @@ impl<T: Default + Clone + Debug> TableMap<T> {
     /// If there are more columns than the target row, fills, all the missing columns
     /// with default value
     pub fn fill_to_end(&mut self) {
-        let n = self.columns.len() - 1;
+        let n = self.col_index - 1;
         self.fill_target(&n, 0);
     }
 
     fn fill_target(&mut self, end: &usize, start: usize) {
         let current_row = self.get_current_row_mut();
-        // let filler = vec![T::default(); end - start + 1];
-        // current_row.extend(filler);
         for ii in start..=*end {
             if let None = current_row.get(ii) {
                 current_row.push(T::default())
@@ -181,7 +178,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
 
     fn get_current_row_mut(&mut self) -> &mut Vec<T> {
         if self.rows.last().is_none() {
-            self.rows.push(vec![])
+            self.rows.push(vec![T::default(); self.columns.len()])
         }
         self.rows.last_mut().unwrap()
     }

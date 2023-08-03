@@ -2,8 +2,7 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::distributions::{Alphanumeric, DistString};
 use std::collections::{BTreeMap, HashMap};
 
-use table_map::table_map::TableMap;
-use table_map::{push, table_map, update_row};
+use table_map::{TableMap, update_row};
 
 macro_rules! inserter {
     ($($c: expr, $v: stmt),+) => {
