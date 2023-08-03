@@ -1,6 +1,8 @@
-use crate::table_map_errors::TableMapErrors;
-use indexmap::IndexMap;
 use std::fmt::Debug;
+
+use indexmap::IndexMap;
+
+use crate::table_map_errors::TableMapErrors;
 
 ///
 /// Updates the current row, it will create a new row if no rows exists
@@ -164,6 +166,15 @@ impl<T: Default + Clone + Debug> TableMap<T> {
 
     pub fn get_vec(&self) -> &Vec<Vec<T>> {
         &self.rows
+    }
+
+    pub fn update_row(&mut self, row_index: usize, col_name: &str, new_val: T) -> Result<(), TableMapErrors> {
+        let index = self.get_column_index(col_name)?;
+        let row = self.get_row_by_index_mut(row_index)?;
+        if let Some(val) = row.get_mut(index) {
+            *val = new_val;
+        }
+        Ok(())
     }
 
     fn get_row_by_index_mut(&mut self, row: usize) -> Result<&mut Vec<T>, TableMapErrors> {

@@ -1,10 +1,9 @@
+pub use crate::table_map::TableMap as TableMap;
+
 #[doc = include_str!("../README.md")]
 
 pub mod table_map;
 pub mod table_map_errors;
-
-pub use crate::table_map::TableMap as TableMap;
-
 
 #[cfg(test)]
 mod tests {
@@ -223,5 +222,37 @@ mod tests {
         tm.add_column("c4");
         tm.next_row();
         assert!(tm.get_column_value_by_index(0, "c4").is_err());
+    }
+
+    #[test]
+    fn accessing_previous_row() {
+        let mut tm = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        push! {
+            tm,
+            "c0", "r0d0".into(),
+            "c2", "r0d2".into()
+        }
+        push! {
+            tm,
+            "c0", "r1d0".into(),
+            "c2", "r1d2".into()
+        }
+        push! {
+            tm,
+            "c0", "r2d0".into(),
+            "c1", "r2d1".into()
+        }
+        tm.update_row(1, "c1", "r1d1.new").unwrap();
+        tm.update_row(0, "c2", "r0d2.mod").unwrap();
+
+        assert_eq!(
+            tm.get_vec(),
+            &vec![
+                vec![ "r0d0", "",         "r0d2.mod", ""],
+                vec![ "r1d0", "r1d1.new", "r1d2", ""],
+                vec![ "r2d0", "r2d1",     "", ""],
+            ]
+        )
     }
 }
