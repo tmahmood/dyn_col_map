@@ -124,7 +124,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         Ok(())
     }
 
-    fn get_column_index(&self, col_name: &str) -> Result<usize, TableMapErrors> {
+    pub fn get_column_index(&self, col_name: &str) -> Result<usize, TableMapErrors> {
         self.columns
             .get(col_name)
             .ok_or(TableMapErrors::InvalidColumnName)

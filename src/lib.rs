@@ -46,6 +46,13 @@ mod tests {
     }
 
     #[test]
+    fn get_column_index_by_name() {
+        let mut tm: TableMap<String> = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        assert_eq!(tm.get_column_index("c3").unwrap(), 3);
+    }
+
+    #[test]
     fn test_macro_obj() {
         #[derive(Clone, Default, PartialEq, Debug)]
         struct TestStruct {
