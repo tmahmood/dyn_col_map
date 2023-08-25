@@ -47,11 +47,30 @@ mod tests {
 
     #[test]
     fn get_column_index_by_name() {
-        let mut tm: TableMap<String> = TableMap::new();
+        let mut tm = TableMap::new();
         tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
-        assert_eq!(tm.get_column_index("c3").unwrap(), 3);
+        update_row! { tm, "c0", "c0v" }
+        update_row! {
+            tm,
+            "c1", "Something",
+            "c2", "v2",
+            "c3", "32"
+        }
+        // get all the columns, sequence is maintained
+        assert_eq!(
+            tm.get_column_value_by_index(0, "c0").unwrap(),
+            "c0v"
+        );
+        assert_eq!(tm.get_column_value("c1").unwrap(), "Something");
     }
 
+    #[test]
+    fn get_value_by_name() {
+        let mut tm: TableMap<String> = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+
+        assert_eq!(tm.get_column_index("c3").unwrap(), 3);
+    }
     #[test]
     fn test_macro_obj() {
         #[derive(Clone, Default, PartialEq, Debug)]
@@ -201,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_unset_column_value_should_be_empty() {
-        let mut tm = setup_for_unset_columns();
+        let tm = setup_for_unset_columns();
         // this will be an empty value, as inserted row does not set "c3" column
         assert_eq!(tm.get_column_value("c3").unwrap(), "");
     }
@@ -229,6 +248,29 @@ mod tests {
         tm.add_column("c4");
         tm.next_row();
         assert!(tm.get_column_value_by_index(0, "c4").is_err());
+    }
+
+    #[test]
+    fn ignore_last_empty_row() {
+        let mut tm: TableMap<String> = TableMap::new();
+        tm.add_columns(vec!["c0", "c1", "c2", "c3"]);
+        assert_eq!(tm.get_vec(), &Vec::<Vec<String>>::new());
+        push! {
+            tm,
+            "c0", "r0d0".into(),
+            "c2", "r0d2".into()
+        }
+        assert_eq!(
+            tm.get_vec(),
+            &vec![
+                vec![
+                    "r0d0".to_string(),
+                    "".to_string(),
+                    "r0d2".to_string(),
+                    "".to_string(),
+                ]
+            ]
+        );
     }
 
     #[test]

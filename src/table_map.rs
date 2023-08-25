@@ -67,6 +67,7 @@ pub struct TableMap<T: Default + Clone + Debug> {
     columns: IndexMap<String, usize>,
     col_index: usize,
     rows: Vec<Vec<T>>,
+    is_current_row_dirty: bool
 }
 
 impl<T: Default + Clone + Debug> TableMap<T> {
@@ -75,6 +76,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
             columns: IndexMap::new(),
             col_index: 0,
             rows: vec![],
+            is_current_row_dirty: true
         }
     }
 
@@ -96,6 +98,12 @@ impl<T: Default + Clone + Debug> TableMap<T> {
     /// insert current row to main collection, clears the current row
     pub fn next_row(&mut self) {
         self.rows.push(vec![T::default(); self.columns.len()]);
+    }
+
+    /// copies current row, and push it at the end, creating duplicate
+    pub fn copy_row(&mut self) {
+        let new_row = self.rows.last().cloned().unwrap();
+        self.rows.push(new_row);
     }
 
     /// Adds a column
