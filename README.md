@@ -8,6 +8,8 @@ As the String keys are mapped to vec index we are storing the string keys only o
 
 Simple macros are provided for easy assigning of data.
 
+TableMap become more useful with `tablemap_helpers`. Check the last example
+
 #### To do
 
 - [ ] fill to end row by index
@@ -151,6 +153,60 @@ Following example attempts to clarify the issue, and provide solution.
 
 ```
 
+## Using tablemap_helpers
+
+add all the columns from the enum
+Columns is an enum that should derive #[derive(EnumIter)]
+
+```rust
+
+use strum::IntoEnumIterator;
+use strum_macros::{EnumIter, IntoStaticStr, EnumString};
+use table_map::{col, TableMap, setters_fn};
+use table_map::table_map_errors::TableMapErrors;
+
+#[derive(EnumIter, IntoStaticStr, EnumString)]
+pub enum Columns {
+    Name,
+    Address
+}
+
+// bring in all the useful setters
+setters_fn!();
+
+fn main() {
+    let mut tm: TableMap<String> = TableMap::new();
+    col!(tm);
+    assert_eq!(
+        tm.get_columns(),
+        vec!["Name".to_string(), "Address".to_string()]
+    );
+    
+    ins_str(&mut tm, Columns::Name, "John");
+    ins_str(&mut tm, Columns::Address, "Unknown");
+    tm.next_row();
+    ins_str(&mut tm, Columns::Name, "Doe");
+    ins_str(&mut tm, Columns::Name, "Still not known");
+    upd_str(&mut tm, 0, Columns::Address, "Still Searching");
+    tm.next_row();
+    // in case we have string
+    let n = "John Doe".to_string();
+    ins_string(&mut tm, Columns::Name, n);
+    assert_eq!(
+        get_column(&mut tm, Columns::Name, Some(0)).unwrap(),
+        "John"
+    );
+    assert_eq!(
+        get_column(&mut tm, Columns::Name, Some(1)).unwrap(),
+        "Still not known"
+    );
+    assert_eq!(
+        get_column(&mut tm, Columns::Name, None).unwrap(),
+        "John Doe"
+    );
+}
+
+```
 ## What this crate tries to solve?
 
 It is trying to maintain the lower memory usage of a vec and ordered key based accessing of an IndexMap.
