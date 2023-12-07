@@ -170,7 +170,7 @@ impl<T: Default + Debug + Clone> TableMap<T> {
     /// gets data from current row, using the column name.
     pub fn get_column_value(&self, col_name: &str) -> Result<T, TableMapErrors> {
         let index = self.get_column_index(col_name)?;
-        let current_row = self.get_current_row();
+        let current_row = self.get_current_row()?;
         current_row
             .get(index)
             .ok_or(TableMapErrors::NoDataSet)
@@ -214,8 +214,8 @@ impl<T: Default + Debug + Clone> TableMap<T> {
             .ok_or(TableMapErrors::InvalidRowIndex)
     }
 
-    fn get_current_row(&self) -> &Vec<T> {
-        self.rows.last().unwrap()
+    pub fn get_current_row(&self) -> Result<&Vec<T>, TableMapErrors> {
+        self.rows.last().ok_or(TableMapErrors::NoDataSet)
     }
 
     fn get_current_row_mut(&mut self) -> &mut Vec<T> {
