@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::slice::Iter;
 
 use indexmap::IndexMap;
 
@@ -63,14 +64,14 @@ macro_rules! push {
 }
 
 #[derive(Clone)]
-pub struct TableMap<T: Default + Clone + Debug> {
+pub struct TableMap<T: Default + Debug + Clone> {
     columns: IndexMap<String, usize>,
     col_index: usize,
     rows: Vec<Vec<T>>,
     is_current_row_dirty: bool
 }
 
-impl<T: Default + Clone + Debug> TableMap<T> {
+impl<T: Default + Debug + Clone> TableMap<T> {
     pub fn new() -> Self {
         Self {
             columns: IndexMap::new(),
@@ -80,6 +81,11 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         }
     }
 
+    /// returns current row index, None if there is no rows inserted yet
+    pub fn current_row_index(&self) -> Option<usize> {
+        if self.rows.len() == 0 { return None }
+        Some(self.rows.len() - 1)
+    }
     /// number of rows
     pub fn num_rows(&self) -> usize {
         self.rows.len()
@@ -95,7 +101,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         self.columns.keys().cloned().collect()
     }
 
-    /// insert current row to main collection, clears the current row
+    /// moves to next row.
     pub fn next_row(&mut self) {
         self.rows.push(vec![T::default(); self.columns.len()]);
     }
@@ -103,6 +109,12 @@ impl<T: Default + Clone + Debug> TableMap<T> {
     /// copies current row, and push it at the end, creating duplicate
     pub fn copy_row(&mut self) {
         let new_row = self.rows.last().cloned().unwrap();
+        self.rows.push(new_row);
+    }
+
+    /// copies the row given by row_index, and push it at the end, creating duplicate
+    pub fn copy_row_at_index(&mut self, row_index: usize) {
+        let new_row = self.rows.get( row_index).cloned().unwrap();
         self.rows.push(new_row);
     }
 
@@ -182,6 +194,7 @@ impl<T: Default + Clone + Debug> TableMap<T> {
             .cloned()
     }
 
+    /// get all the data, this returns reference, so will not take any additional memory
     pub fn get_vec(&self) -> &Vec<Vec<T>> {
         &self.rows
     }
@@ -211,4 +224,10 @@ impl<T: Default + Clone + Debug> TableMap<T> {
         }
         self.rows.last_mut().unwrap()
     }
+
+    /// returns iter for the inner vec
+    pub fn iter(&self) -> Iter<'_, Vec<T>> {
+        self.rows.iter()
+    }
+
 }
