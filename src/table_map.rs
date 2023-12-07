@@ -139,7 +139,7 @@ impl<T: Default + Debug + Clone> TableMap<T> {
     pub fn insert(&mut self, col_name: &str, value: T) -> Result<(), TableMapErrors> {
         let index = self.get_column_index(col_name)?;
         self.fill_to_end();
-        let current_row = self.get_current_row_mut();
+        let current_row = self.get_or_create_current_row();
         current_row[index] = value;
         Ok(())
     }
@@ -159,7 +159,7 @@ impl<T: Default + Debug + Clone> TableMap<T> {
     }
 
     fn fill_target(&mut self, end: &usize, start: usize) {
-        let current_row = self.get_current_row_mut();
+        let current_row = self.get_or_create_current_row();
         for ii in start..=*end {
             if let None = current_row.get(ii) {
                 current_row.push(T::default())
@@ -218,9 +218,13 @@ impl<T: Default + Debug + Clone> TableMap<T> {
         self.rows.last().ok_or(TableMapErrors::NoDataSet)
     }
 
-    fn get_current_row_mut(&mut self) -> &mut Vec<T> {
+    pub fn get_current_row_mut(&mut self) -> Result<&mut Vec<T>, TableMapErrors> {
+        self.rows.last_mut().ok_or(TableMapErrors::NoDataSet)
+    }
+
+    pub fn get_or_create_current_row(&mut self) -> &mut Vec<T> {
         if self.rows.last().is_none() {
-            self.rows.push(vec![T::default(); self.columns.len()])
+            self.rows.push(vec![T::default(); self.columns.len()]);
         }
         self.rows.last_mut().unwrap()
     }
