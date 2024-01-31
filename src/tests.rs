@@ -220,7 +220,6 @@ fn test_unset_column_value_should_be_empty() {
 #[test]
 fn test_accessing_rows_added_before_additional_column_returns_error() {
     let mut tm = setup_for_unset_columns();
-    println!("{:?}", tm.get_vec());
     tm.add_column("c4");
     // this will cause a NoDataSet error, cause column c4 was created after setting *this* row
     assert!(tm.get_column_value("c4").is_err());
