@@ -4,7 +4,7 @@ HashMap, BTreeMap, IndexMap needs a lot of memory in case of String based keys, 
 
 This is a simple library that tries to memory efficiently provide a `IndexMap` with a String key like functionality using vecs, that might have a large number of data with string keys. There might be other better solutions in the wild.
 
-As the String keys are mapped to vec index we are storing the string keys only once, instead of we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
+As the String keys are mapped to vec index we are storing the string keys only once, so of we keep the best of both worlds. I have not benchmarked it, so can not say anything about performance.
 
 Simple macros are provided for easy assigning of data.
 
